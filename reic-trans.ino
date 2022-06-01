@@ -5,13 +5,11 @@
 #define DESTINATION_ADDRESS 12
 
 int c = 0;
-int S = 0;
-int N = 0;
-int P = 0;
+int S = 100;
 boolean successful_packet = false;
 long randNumber;
 int max_delay=300;
-int eventInterval = 20000;
+int eventInterval = 5000;
 RF22Router rf22(MY_ADDRESS);
 
 
@@ -24,12 +22,7 @@ void loop() {
   unsigned long t = millis();
   unsigned long tim = t;
   if(c==0){
-    if(N > P){
-      S = 100;    
-    }
-    else{
-      S = 10;
-    }
+    S = int(random(100));
     char data_read[RF22_ROUTER_MAX_MESSAGE_LEN];
     uint8_t data_send[RF22_ROUTER_MAX_MESSAGE_LEN];
     memset(data_read, '\0', RF22_ROUTER_MAX_MESSAGE_LEN);
@@ -43,17 +36,13 @@ void loop() {
         {
           if (rf22.sendtoWait(data_send, sizeof(data_send), DESTINATION_ADDRESS) != RF22_ROUTER_ERROR_NONE)
           {
-            Serial.println("sendtoWait failed");
             randNumber=random(200,max_delay);
-            Serial.println(randNumber);
             delay(randNumber);
           }
           else
           {
             successful_packet = true;
             c = 1;
-            N = 0;
-            P = 0;
           }
       }
   }
@@ -72,8 +61,6 @@ void loop() {
         if (rf22.recvfromAck(buf, &len, &from)){
           buf[RF22_ROUTER_MAX_MESSAGE_LEN - 1] = '\0';
           memcpy(incoming, buf, RF22_ROUTER_MAX_MESSAGE_LEN);
-          Serial.print("DATA FROM ATHLETE: ");
-          Serial.println(from, DEC);
           const char s[4] = " ";
           char *token;
           token = strtok(incoming,s);
@@ -86,18 +73,13 @@ void loop() {
           int Temp = atoi(token);
           token = strtok(NULL,s);
           int Humid = atoi(token);
-          Serial.println(Athl);
-          Serial.println(In_Temp);
-          Serial.println(Speed);
-          Serial.println(Temp);
+          Serial.print(In_Temp);
+          Serial.print(" ");
+          Serial.print(Speed);
+          Serial.print(" ");
+          Serial.print(Temp);
+          Serial.print(" ");
           Serial.println(Humid);
-          
-          if(In_Temp > 39  & Temp > 38 & Humid > 90){
-            N++; 
-          }
-          else {
-            P++;
-          }
         } 
         c=0;
       }

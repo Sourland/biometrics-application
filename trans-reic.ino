@@ -4,6 +4,9 @@
 #define MY_ADDRESS 12
 #define NODE_ADDRESS 6
 #define DESTINATION_ADDRESS 6
+#define RED 8
+#define GREEN 9
+
 
 #include "Wire.h" // This library allows you to communicate with I2C devices.
 #include "DHT.h"
@@ -25,6 +28,7 @@ int Tmp = 0;
 int counter = 0;
 int average = 0;
 int totalA = 0;
+int received_value = 0;
 
 char tmp_str[7]; // temporary variable used in convert function
 
@@ -35,7 +39,7 @@ char* convert_int16_to_str(int16_t i) { // converts int16 to string. Moreover, r
 
 long randNumber;
 int max_delay = 300;
-int eventInterval = 20000;
+int eventInterval = 5000;
 unsigned long t = 0;
 RF22Router rf22(MY_ADDRESS);
 int c = 0;
@@ -44,6 +48,8 @@ int num = 1;
 void setup() {
   Serial.begin(9600); 
   Initialize();
+  pinMode(RED,OUTPUT);
+  pinMode(GREEN,OUTPUT);
   dht.begin();
   Wire.begin();
   Wire.beginTransmission(MPU_ADDR); // Begins a transmission to the I2C slave (GY-521 board)
@@ -58,6 +64,15 @@ void loop() {
   unsigned long tmp = millis();
   unsigned long Tmp;
   double Az,T,v;
+
+  if(received_value < 50){
+    digitalWrite(GREEN, HIGH);
+    digitalWrite(RED, LOW);
+  }
+  else{
+    digitalWrite(RED, HIGH);
+    digitalWrite(GREEN, LOW);
+  }
   
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x3B); // starting with register 0x3B (ACCEL_XOUT_H) [MPU-6000 and MPU-6050 Register Map and Descriptions Revision 4.2, p.40]
@@ -106,8 +121,7 @@ void loop() {
       memset(buf, '\0', RF22_ROUTER_MAX_MESSAGE_LEN);
       memset(incoming, '\0', RF22_ROUTER_MAX_MESSAGE_LEN);
       uint8_t len = sizeof(buf);
-      uint8_t from;
-      int received_value = 0; 
+      uint8_t from; 
 
       if (rf22.recvfromAck(buf, &len, &from)){
         buf[RF22_ROUTER_MAX_MESSAGE_LEN - 1] = '\0';
@@ -116,16 +130,8 @@ void loop() {
         Serial.println(from, DEC);
         received_value = atoi((char*)incoming);
         Serial.println(received_value);
-        if(received_value < 50 & received_value > 0){
-          Serial.println("Positive");
-          c = 1;
-          t = millis();
-        }  
-        else if(received_value < 100 & received_value > 50){
-          Serial.println("Negative");
-          c = 1;
-          t = millis();
-        }
+        c = 1;
+        t = millis();
       }
  }
  else{  
@@ -140,7 +146,6 @@ void loop() {
       if (rf22.sendtoWait(data_send, sizeof(data_send), DESTINATION_ADDRESS) != RF22_ROUTER_ERROR_NONE)
       {
           randNumber=random(200,max_delay);
-          Serial.println(randNumber);
           delay(randNumber);
       }
       else
