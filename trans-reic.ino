@@ -64,7 +64,7 @@ void loop() {
   unsigned long tmp = millis();
   unsigned long Tmp;
   double Az,T,v;
-  int16_t a,b,w,e;
+  int16_t a,b,w,d,e;
 
   if(received_value < 50){
     digitalWrite(GREEN, HIGH);
