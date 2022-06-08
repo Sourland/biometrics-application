@@ -64,6 +64,7 @@ void loop() {
   unsigned long tmp = millis();
   unsigned long Tmp;
   double Az,T,v;
+  int16_t a,b,w,e;
 
   if(received_value < 50){
     digitalWrite(GREEN, HIGH);
@@ -88,13 +89,13 @@ void loop() {
   }
  
   // "Wire.read()<<8 | Wire.read();" means two registers are read and stored in the same variable
-  Wire.read()<<8;
-  Wire.read()<<8;
+  a = Wire.read()<<8 | Wire.read();
+  b = Wire.read()<<8 | Wire.read();
   accelerometer_z = Wire.read()<<8 | Wire.read(); // reading registers: 0x3F (ACCEL_ZOUT_H) and 0x40 (ACCEL_ZOUT_L)
   temperature = Wire.read()<<8 | Wire.read(); // reading registers: 0x41 (TEMP_OUT_H) and 0x42 (TEMP_OUT_L)
-  Wire.read()<<8;
-  Wire.read()<<8;
-  Wire.read()<<8;
+  w = Wire.read()<<8 | Wire.read();
+  d = Wire.read()<<8 | Wire.read();
+  e = Wire.read()<<8 | Wire.read();
   
   if(millis() - Tmp > 10){
     Az = (double)accelerometer_z/AccelScaleFactor;
